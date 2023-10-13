@@ -35,7 +35,7 @@ async function run() {
     const tabCollction = client.db('Muntajat').collection('Tab')
     const AllproducCollction = client.db('Muntajat').collection('AllProduct')
     const AllCatagoreyproducCollction = client.db('Muntajat').collection('AllCatagoryProduct')
-
+    const usersCollction=client.db('Muntajat').collection("Users")
 
     app.get('/allproduct',async (req,res)=>{
       const qurey={}
@@ -47,11 +47,42 @@ async function run() {
 
    
 
-    const catagory=req.query.catagory
-      const qurey={category:catagory}
-      const result=await (await AllCatagoreyproducCollction.find(qurey).sort({price:1}).toArray())
+    const catagory=req.query.catagory;
+    const sorting= req.query.sorting;
+    const minValue=req.query.minValue;
+    const maxValue=req.query.maxValue;
+      //  console.log(sorting,minValue,maxValue)
+
+       const sellerName=req.query.sellerName;
+       console.log(sellerName)
+       const querysort =sorting === 'Sort by price: hight to low'?{price:-1} :{} && sorting=== 'Sort by price: low to hight'?{price:1}:{} && sorting ==='Sort by name: A to Z'?{name:1}:{}&& sorting==='Sort by name: Z to A'?{name:-1}:{}
+       
+      const qurey1={SellerName:sellerName}
+      const qurey2={category:catagory}
+      const qurey3 =catagory?qurey2:qurey1
+      const result=await  AllCatagoreyproducCollction.find(qurey3).sort(querysort).toArray()
+      
+      
       res.send(result)
   })
+
+  app.post('/catagoryproduct', async(req,res)=>{
+    const qurey=req.body;
+    const result=await AllCatagoreyproducCollction.insertOne(qurey)
+    res.send(result)
+  })
+
+
+  app.post('/users',async(req,res)=>{
+    const users =req.body;
+    const result =await usersCollction.insertOne(users)
+    res.send(result)
+  })
+  app.get('/users',async (req,res)=>{
+    const qurey={}
+    const result=await usersCollction.find(qurey).toArray()
+    res.send(result)
+})
 
 
 
