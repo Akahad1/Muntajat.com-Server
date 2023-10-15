@@ -12,7 +12,7 @@ const port=process.env.PORT || 5000
 // nsxmDYw08zmr8EGu
 
 
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const uri = "mongodb+srv://muntajat:nsxmDYw08zmr8EGu@cluster0.xuxoczf.mongodb.net/?retryWrites=true&w=majority";
 
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
@@ -36,16 +36,15 @@ async function run() {
     const AllproducCollction = client.db('Muntajat').collection('AllProduct')
     const AllCatagoreyproducCollction = client.db('Muntajat').collection('AllCatagoryProduct')
     const usersCollction=client.db('Muntajat').collection("Users")
+    const OrderCollction=client.db('Muntajat').collection("Orders")
 
     app.get('/allproduct',async (req,res)=>{
       const qurey={}
       const result=await AllproducCollction.find(qurey).toArray()
       res.send(result)
   })
+
   app.get('/catagoryproduct',async (req,res)=>{
-
-
-   
 
     const catagory=req.query.catagory;
     const sorting= req.query.sorting;
@@ -84,6 +83,18 @@ async function run() {
     res.send(result)
 })
 
+app.post('/orders',async(req,res)=>{
+  const order =req.body;
+  const result= await OrderCollction.insertOne(order)
+  res.send(result)
+})
+
+app.get("/orders/:id",async(req,res)=>{
+  const id =req.params.id;
+  const query={_id:ObjectId(id)}
+  const result= await OrderCollction.findOne(query)
+  res.send(result)
+})
 
 
     // app.get('/laptop',async (req,res)=>{
