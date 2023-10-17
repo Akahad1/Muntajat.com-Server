@@ -1,20 +1,21 @@
 const express = require('express');
 const cors = require('cors');
 const app=express()
+const jwt =require('jsonwebtoken')
 
 app.use(cors())
 app.use(express.json())
 require('dotenv').config()
 
-const stripe = require("stripe")('sk_test_51M6bnCGbMWtcM0fIEdLFjcbbTssP30xNSL2Ekm5JyI6qi48SrYeBkY711LEoiHFTZ3Fe54K6uIrrhZufxxU67mkx00wM4eQRLJ');
+const stripe = require("stripe")(process.env.PAYMENT_KEY);
 const port=process.env.PORT || 5000 
 
-// muntajat
-// nsxmDYw08zmr8EGu
+console.log(process.env.PAYMENT_KEY)
+
 
 
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
-const uri = "mongodb+srv://muntajat:nsxmDYw08zmr8EGu@cluster0.xuxoczf.mongodb.net/?retryWrites=true&w=majority";
+const uri = `mongodb+srv://${process.env.SERVER_NAME}:${process.env.SERVER_PASSWORD}@cluster0.xuxoczf.mongodb.net/?retryWrites=true&w=majority`;
 
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
 const client = new MongoClient(uri, {
@@ -24,6 +25,25 @@ const client = new MongoClient(uri, {
     deprecationErrors: true,
   }
 });
+
+function veryfiyjwt(req,res,next){
+  // chack headers token
+  const authHeader=req.headers.authraization;
+  if(!authHeader){
+    res.status(401).send({message:'unauthraized access'})
+  }
+  
+  //  chack valid token
+  const token =authHeader.split(' ')[1]
+  jwt.verify(token,process.env.ACCESS_TOKEN_SECRET, function(err,decoded){
+    if(err){
+      res.status(403).send({message:'Forbidend access'}) 
+    }
+    req.decoded=decoded
+    next()
+  })
+
+}
 
 async function run() {
   try {
@@ -39,7 +59,12 @@ async function run() {
     const usersCollction=client.db('Muntajat').collection("Users")
     const OrderCollction=client.db('Muntajat').collection("Orders")
     const paymentCollction=client.db('Muntajat').collection("payment")
-
+    
+    app.post('/jwt',(req,res)=>{
+      const user=req.body;
+      const token=jwt.sign(user,process.env.ACCESS_TOKEN_SECRET,{expiresIn:'7d'})
+      res.send({token})
+    })
     app.get('/allproduct',async (req,res)=>{
       const qurey={}
       const result=await AllproducCollction.find(qurey).toArray()
@@ -124,9 +149,15 @@ app.get("/orders/:id",async(req,res)=>{
   const result= await OrderCollction.findOne(query)
   res.send(result)
 })
-app.get("/orders",async(req,res)=>{
+app.get("/orders",veryfiyjwt, async(req,res)=>{
+  const decoded=req.decoded
+  if(decoded.email !==req.query.email ){
+    res.status(403).send({message:'unauthraized access'})
+    
+  }
   const email=req.query.email;
   console.log(email)
+  
   
   const query={email:email}
   const result= await OrderCollction.find(query).toArray()
