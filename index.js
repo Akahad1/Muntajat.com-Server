@@ -85,6 +85,33 @@ async function run() {
     res.send(result)
 })
 
+app.put('/users/admin/:id',async(req,res)=>{
+  const id =req.params.id;
+  const filter ={_id:ObjectId(id)}
+  const options={upsert:true}
+  const updatedoc ={
+    $set:{
+        role:'admin'
+    }
+  }
+  const result = await usersCollction.updateOne(filter,updatedoc,options)
+  res.send(result)
+})
+
+app.get("/users/admin/:email",async(req,res)=>{
+  const email =req.params.email;
+  const filter ={email}
+  const user = await usersCollction.findOne(filter)
+  res.send({IsAdmin : user?.role ==='admin'})
+})
+app.get("/users/sellar/:email",async(req,res)=>{
+  const email =req.params.email;
+  const filter ={email}
+  const user = await usersCollction.findOne(filter)
+  res.send({IsSellar : user?.role ==='Sellar'})
+})
+
+
 app.post('/orders',async(req,res)=>{
   const order =req.body;
   const result= await OrderCollction.insertOne(order)
@@ -98,8 +125,10 @@ app.get("/orders/:id",async(req,res)=>{
   res.send(result)
 })
 app.get("/orders",async(req,res)=>{
+  const email=req.query.email;
+  console.log(email)
   
-  const query={}
+  const query={email:email}
   const result= await OrderCollction.find(query).toArray()
   res.send(result)
 })
