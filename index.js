@@ -3,6 +3,13 @@ const cors = require('cors');
 const app=express()
 const jwt =require('jsonwebtoken')
 
+// const corsConfig = {
+//   origin: '',
+//   credentials: true,
+//   methods: ['GET', 'POST', 'PUT', 'DELETE']
+// }
+// app.use(cors(corsConfig))
+// app.options("", cors(corsConfig))
 app.use(cors())
 app.use(express.json())
 require('dotenv').config()
@@ -47,10 +54,10 @@ function veryfiyjwt(req,res,next){
 
 async function run() {
   try {
-    await client.connect();
+     client.connect();
    
-    await client.db("admin").command({ ping: 1 });
-    console.log("Pinged your deployment. You successfully connected to MongoDB!");
+    // await client.db("admin").command({ ping: 1 });
+   
     const laptopCollction = client.db('Muntajat').collection('Laptop')
     const mobileCollction = client.db('Muntajat').collection('Mobile')
     const tabCollction = client.db('Muntajat').collection('Tab')
@@ -62,6 +69,7 @@ async function run() {
     
     app.post('/jwt',(req,res)=>{
       const user=req.body;
+      console.log('useremail',user)
       const token=jwt.sign(user,process.env.ACCESS_TOKEN_SECRET,{expiresIn:'7d'})
       res.send({token})
     })
@@ -150,13 +158,13 @@ app.get("/orders/:id",async(req,res)=>{
   res.send(result)
 })
 app.get("/orders",veryfiyjwt, async(req,res)=>{
-  const decoded=req.decoded
-  if(decoded.email !==req.query.email ){
-    res.status(403).send({message:'unauthraized access'})
+  // const decoded=req.decoded
+  // if(decoded.email !==req.query.email ){
+  //   res.status(403).send({message:'unauthraized access'})
     
-  }
+  // }
   const email=req.query.email;
-  console.log(email)
+  // console.log(email)
   
   
   const query={email:email}
@@ -165,22 +173,7 @@ app.get("/orders",veryfiyjwt, async(req,res)=>{
 })
 
 
-    // app.get('/laptop',async (req,res)=>{
-    //     const qurey={}
-    //     const result=await laptopCollction.find(qurey).toArray()
-    //     res.send(result)
-    // })
-    
-    // app.get('/mobile',async(req,res)=>{
-    //   const qurey={}
-    //   const result= await mobileCollction.find(qurey).toArray()
-    //   res.send(result)
-    // })
-    // app.get('/tab',async(req,res)=>{
-    //   const qurey={}
-    //   const result= await tabCollction.find(qurey).toArray()
-    //   res.send(result)
-    // })
+   
     
 
     app.post("/create-payment-intent",async(req,res)=>{

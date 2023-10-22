@@ -4,7 +4,10 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "start": "node index.js",
+    "start-dev": "node index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
+    
   },
   "author": "Sahad",
   "license": "ISC",
@@ -15,6 +18,7 @@
     "jsonwebtoken": "^9.0.2",
     "mongodb": "4.1",
     "nodemon": "^3.0.1",
-    "stripe": "^13.10.0"
+    "stripe": "^13.10.0",
+    "vercel": "^32.5.0"
   }
 }
